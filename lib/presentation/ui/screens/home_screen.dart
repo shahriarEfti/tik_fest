@@ -58,7 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               height: 2,
               width: MediaQuery.of(context).size.width,
-              color: Colors.black,
+              color: Colors.grey,
             ),
             const SizedBox(height: 30),
             Expanded(
