@@ -3,6 +3,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../state_holder/slider_list_controler.dart';
+
 import 'centered_circular_progress_indicator.dart';
 
 class HomeBannerSlider extends StatefulWidget {
@@ -22,7 +23,7 @@ class _HomeBannerSliderState extends State<HomeBannerSlider> {
     return GetBuilder<SliderListController>(builder: (sliderListController) {
       return Visibility(
         visible: !sliderListController.inProgress,
-        replacement: SizedBox(
+        replacement: const SizedBox(
           height: 192,
           child: CenteredCircularProgressIndicator(),
         ),
@@ -54,7 +55,7 @@ class _HomeBannerSliderState extends State<HomeBannerSlider> {
             return CachedNetworkImage(
               imageUrl: slider.image.toString(),
               errorWidget: (context,stringValue,_){
-                return Icon(Icons.error);
+                return const Icon(Icons.error);
               },
               imageBuilder: (context, imageProvider) {
                 return Container(
@@ -62,7 +63,7 @@ class _HomeBannerSliderState extends State<HomeBannerSlider> {
                   margin: const EdgeInsets.symmetric(horizontal: 2),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
-                    color: Colors.blueGrey,
+                    color: Colors.amber,
                     image: DecorationImage(
                       image: imageProvider,
                       fit: BoxFit.cover,
@@ -90,9 +91,9 @@ class _HomeBannerSliderState extends State<HomeBannerSlider> {
                             onPressed: () {},
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white,
-                              foregroundColor: Colors.blueGrey,
+                              foregroundColor: Colors.amber,
                             ),
-                            child: Text(
+                            child: const Text(
                               'Buy Now',
                             ),
                           ),
@@ -118,13 +119,13 @@ class _HomeBannerSliderState extends State<HomeBannerSlider> {
             children: [
               for (int i = 0; i < sliderListController.sliders.length; i++)
                 Container(
-                  margin: EdgeInsets.only(right: 4),
+                  margin: const EdgeInsets.only(right: 4),
                   height: 12,
                   width: 12,
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Colors.grey),
-                      color: currentIndex == i ? Colors.blueGrey : null),
+                      color: currentIndex == i ? Colors.black45 : null),
                 )
             ],
           );
