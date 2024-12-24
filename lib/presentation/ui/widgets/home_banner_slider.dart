@@ -86,12 +86,13 @@ class _HomeBannerSliderState extends State<HomeBannerSlider> {
                               fontWeight: FontWeight.w800),
                         ),
                         SizedBox(
-                          width: 100,
+
+                          width: 120,
                           child: ElevatedButton(
                             onPressed: () {},
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white,
-                              foregroundColor: Colors.amber,
+                              foregroundColor: Colors.redAccent,
                             ),
                             child: const Text(
                               'Buy Now',
@@ -120,12 +121,12 @@ class _HomeBannerSliderState extends State<HomeBannerSlider> {
               for (int i = 0; i < sliderListController.sliders.length; i++)
                 Container(
                   margin: const EdgeInsets.only(right: 4),
-                  height: 12,
-                  width: 12,
+                  height: 10,
+                  width: 10,
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey),
-                      color: currentIndex == i ? Colors.black45 : null),
+                      border: Border.all(color: Colors.redAccent),
+                      color: currentIndex == i ? Colors.redAccent : null),
                 )
             ],
           );
