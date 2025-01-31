@@ -17,7 +17,6 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-
     _controller = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: TickerProviderStateMixinHelper(), // Use a helper class as vsync
@@ -73,7 +72,6 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 }
-
 
 class TickerProviderStateMixinHelper extends TickerProvider {
   @override

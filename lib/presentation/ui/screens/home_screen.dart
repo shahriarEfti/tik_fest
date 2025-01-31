@@ -38,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 8),
-               const HomeBannerSlider(),
+              const HomeBannerSlider(),
               const SizedBox(height: 5),
               const FestivalReminder(),
               const SizedBox(height: 12),

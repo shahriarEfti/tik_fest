@@ -1,9 +1,10 @@
 import 'package:get/get.dart';
 import 'package:tik_fest/Data/services/network_caller.dart';
+import 'package:tik_fest/presentation/state_holder/sign_in_controler.dart';
+import 'package:tik_fest/presentation/state_holder/sign_up_controler.dart';
 
 import 'package:tik_fest/presentation/state_holder/slider_list_controler.dart';
 import 'package:tik_fest/presentation/state_holder/ticket_list_controler.dart';
-
 
 class ControllerBinder extends Bindings {
   @override
@@ -12,7 +13,7 @@ class ControllerBinder extends Bindings {
 
     Get.put(NetworkCaller());
     Get.put(TicketListControler());
-
-
+    Get.put(SignInController());
+    Get.put(SignUpController());
   }
 }
