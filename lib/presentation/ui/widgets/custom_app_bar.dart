@@ -1,10 +1,17 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:tik_fest/presentation/ui/screens/profile_screen.dart';
+import 'package:tik_fest/presentation/ui/widgets/toast.dart';
 
+import '../screens/Auth/sign_In_screen.dart';
 import 'custom_search_delegate.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const CustomAppBar({super.key});
+  CustomAppBar({super.key});
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -28,11 +35,14 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           },
           icon: const Icon(Icons.search, color: Colors.black),
         ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: CircleAvatar(
-            backgroundImage: AssetImage('assets/images/nurullah.jpg'),
-            backgroundColor: Colors.redAccent,
+        GestureDetector(
+          onTap: () => _showBottomSheet(context),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: CircleAvatar(
+              backgroundImage: AssetImage('assets/images/nurullah.jpg'),
+              backgroundColor: Colors.redAccent,
+            ),
           ),
         )
       ],
@@ -41,4 +51,104 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+}
+
+void _showBottomSheet(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (BuildContext context) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Profile Info Row
+            Row(
+              children: [
+                CircleAvatar(
+                  backgroundImage: AssetImage('assets/images/nurullah.jpg'),
+                  backgroundColor: Colors.redAccent,
+                  radius: 25,
+                ),
+                SizedBox(width: 10),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Mohammad Nurullah',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'mohammadnurullah41@gmail.com',
+                      style: TextStyle(fontWeight: FontWeight.w400, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            SizedBox(height: 15),
+
+            // Buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                // Profile Button
+                SizedBox(
+                  height: 45,
+                  width: 150,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onPressed: () {
+                      Get.to(() => ProfileScreen());
+                      print('Profile tapped');
+                    },
+                    icon: Icon(Icons.person, size: 24),
+                    label: Text('Profile'),
+                  ),
+                ),
+
+                // Logout Button
+                SizedBox(
+                  height: 45,
+                  width: 150,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onPressed: () {
+                      signOut(FirebaseAuth.instance);
+                      print('Logout tapped');
+                    },
+                    icon: Icon(Icons.logout, size: 24, color: Colors.white),
+                    label: Text('Logout', style: TextStyle(color: Colors.white)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+Future<void> signOut(FirebaseAuth _auth) async {
+  try {
+    await _auth.signOut();
+    showToast(message: 'Signed out successfully');
+    Get.offAll(() => const SignInScreen());
+  } catch (e) {
+    showToast(message: 'Error signing out: $e');
+  }
 }

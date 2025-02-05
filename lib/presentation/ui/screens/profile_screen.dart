@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
-import '../widgets/profile_card.dart';
+import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
+import '../widgets/profile_textfield.dart';
+import '../widgets/toast.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -10,87 +17,167 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final List<Map<String, dynamic>> profileOptions = [
-    {'icon': Icons.person, 'title': 'Profile'},
-    {'icon': Icons.lock, 'title': 'Password'},
-    {'icon': Icons.credit_card, 'title': 'My Cards'},
-    {'icon': Icons.language, 'title': 'Language'},
-    {'icon': Icons.settings, 'title': 'Settings'},
-  ];
+  bool _isEditing = false;
+  File? _image;
+  String? profileImageUrl;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  User? currentUser = FirebaseAuth.instance.currentUser;
+
+  final TextEditingController firstNameController = TextEditingController();
+  final TextEditingController lastNameController = TextEditingController();
+  final TextEditingController mobileController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserProfile();
+  }
+
+  Future<void> _fetchUserProfile() async {
+    if (currentUser != null) {
+      DocumentSnapshot userDoc = await _firestore.collection('users').doc(currentUser!.uid).get();
+      if (userDoc.exists) {
+        Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
+        firstNameController.text = data['firstName'] ?? '';
+        lastNameController.text = data['lastName'] ?? '';
+        mobileController.text = data['mobile'] ?? '';
+        profileImageUrl = data['profileImage'] ?? '';
+        setState(() {});
+      }
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+      });
+      await _uploadImageToFirebase();
+    }
+  }
+
+  Future<void> _uploadImageToFirebase() async {
+    if (_image == null) return;
+    try {
+      final storageRef = FirebaseStorage.instance.ref().child('profile_images/${currentUser!.uid}.jpg');
+      final uploadTask = storageRef.putFile(_image!);
+      final snapshot = await uploadTask.whenComplete(() {});
+      final downloadUrl = await snapshot.ref.getDownloadURL();
+
+      await _firestore.collection('users').doc(currentUser!.uid).update({'profileImage': downloadUrl});
+      setState(() {
+        profileImageUrl = downloadUrl;
+      });
+    } catch (e) {
+      debugPrint("Error uploading image: $e");
+    }
+  }
+
+  Future<void> _updateProfile() async {
+    if (currentUser != null) {
+      await _firestore.collection('users').doc(currentUser!.uid).update({
+        'firstName': firstNameController.text,
+        'lastName': lastNameController.text,
+        'mobile': mobileController.text,
+      });
+      setState(() {
+        _isEditing = false;
+      });
+      showToast(message: 'Profile updated successfully');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: Icon(Icons.arrow_back_ios_outlined),
         centerTitle: true,
-        title: Text('My Account'),
+        title: const Text('Personal Details', style: TextStyle(color: Colors.black)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(_isEditing ? Icons.check : Icons.edit, color: Colors.black),
+            onPressed: () {
+              if (_isEditing) {
+                _updateProfile();
+              } else {
+                setState(() {
+                  _isEditing = true;
+                });
+              }
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(18.0),
         child: Column(
           children: [
             Center(
-              child: CircleAvatar(
-                radius: 50,
-                backgroundColor: Colors.redAccent,
-                backgroundImage: AssetImage('assets/images/nurullah.jpg'),
-              ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              "Mohammad Nurullah",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              "mohammadnurullah123@gmail.com",
-              style: TextStyle(
-                fontWeight: FontWeight.w300,
-                fontStyle: FontStyle.italic,
-                fontSize: 14,
-              ),
-            ),
-            SizedBox(height: 20),
-            Expanded(
-              child: ListView.separated(
-                itemBuilder: (_, index) {
-                  return ProfileCard(
-                    icon: profileOptions[index]['icon'],
-                    title: profileOptions[index]['title'],
-                  );
-                },
-                separatorBuilder: (_, __) => SizedBox(height: 10),
-                itemCount: profileOptions.length,
-              ),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red, // Set the button background color
-                foregroundColor: Colors.white, // Set the text and icon color
-                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24), // Adjust padding
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10), // Rounded corners
-                ),
-              ),
-              
-                
-                onPressed: (){},
-                
-
-                child: Center(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text('Logout'),
-
-                      SizedBox(width: 8),
-                      Icon(Icons.logout,color: Colors.white,),
-
-                    ],
+              child: Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundColor: Colors.grey,
+                    backgroundImage: _image != null
+                        ? FileImage(_image!)
+                        : (profileImageUrl != null && profileImageUrl!.isNotEmpty
+                        ? NetworkImage(profileImageUrl!)
+                        : const AssetImage('assets/images/default_avatar.png')) as ImageProvider,
                   ),
-                )),
-
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: GestureDetector(
+                      onTap: _pickImage,
+                      child: const CircleAvatar(
+                        radius: 15,
+                        backgroundColor: Colors.white,
+                        child: Icon(Icons.camera_alt, size: 18, color: Colors.redAccent),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            ProfileTextField(
+              icon: Icons.person,
+              label: 'First Name',
+              hintText: 'Enter first name',
+              controller: firstNameController,
+              enabled: _isEditing,
+            ),
+            ProfileTextField(
+              icon: Icons.person,
+              label: 'Last Name',
+              hintText: 'Enter last name',
+              controller: lastNameController,
+              enabled: _isEditing,
+            ),
+            ProfileTextField(
+              icon: Icons.phone,
+              label: 'Mobile',
+              hintText: 'Enter mobile number',
+              controller: mobileController,
+              enabled: _isEditing,
+              keyboardType: TextInputType.phone,
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: _isEditing ? _updateProfile : null,
+              icon: const Icon(Icons.save, color: Colors.white),
+              label: const Text('Update Profile'),
+            ),
           ],
         ),
       ),

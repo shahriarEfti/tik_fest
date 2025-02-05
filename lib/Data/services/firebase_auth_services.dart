@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
+import 'package:tik_fest/presentation/ui/screens/Auth/sign_In_screen.dart';
 import '../../presentation/ui/screens/Auth/pin_code_verification.dart';
 import '../../presentation/ui/screens/Auth/reset_password.dart';
 import '../../presentation/ui/widgets/toast.dart';
@@ -69,6 +70,8 @@ class FirebaseAuthService {
 
 
 
+
+
   Future<void> sendVerificationEmail(String email) async {
     User? user = _auth.currentUser;
     if (user != null && !user.emailVerified) {
@@ -97,7 +100,10 @@ class FirebaseAuthService {
   }
 
 
+
+
 }
+
 
 
 
