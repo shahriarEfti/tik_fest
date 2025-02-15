@@ -1,64 +1,54 @@
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import '../ui/widgets/toast.dart';
-import '../ui/screens/Auth/pin_code_verification.dart';
-import '../ui/screens/Auth/sign_in_screen.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_state_manager/src/simple/get_controllers.dart';
+
+import '../../Data/models/user_model.dart';
 
 class SignUpController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final TextEditingController usernameController = TextEditingController();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
 
-  var isSigningUp = false.obs;
+  bool isLoading = false;
 
-  @override
-  void onClose() {
-    usernameController.dispose();
-    emailController.dispose();
-    passwordController.dispose();
-    phoneController.dispose();
-    super.onClose();
-  }
-
-  void signUp() async {
-    isSigningUp(true);
-
-    String email = emailController.text.trim();
-    String password = passwordController.text.trim();
-    String phone = phoneController.text.trim();
-
+  Future<void> signUp(File? imageFile) async {
     try {
-      // Create user with email & password
+      isLoading = true;
       UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
       );
-
-      // Verify phone number
-      _auth.verifyPhoneNumber(
-        phoneNumber: phone,
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          await userCredential.user?.updatePhoneNumber(credential);
-          showToast(message: "Phone number verified");
-        },
-        verificationFailed: (FirebaseAuthException e) {
-          showToast(message: "Phone verification failed: ${e.message}");
-        },
-        codeSent: (String verificationId, int? resendToken) {
-          Get.to(() => PinVerificationScreen());
-        },
-        codeAutoRetrievalTimeout: (String verificationId) {},
+      String imageUrl = '';
+      if (imageFile != null) {
+        TaskSnapshot snapshot = await _storage
+            .ref('profile_pictures/${userCredential.user!.uid}')
+            .putFile(imageFile);
+        imageUrl = await snapshot.ref.getDownloadURL();
+      }
+      UserModel user = UserModel(
+        id: userCredential.user!.uid,
+        name: nameController.text.trim(),
+        email: emailController.text.trim(),
+        mobile: phoneController.text.trim(),
+        profileImageUrl: imageUrl,
       );
-
-      isSigningUp(false);
-      showToast(message: "User successfully created. Please verify your phone.");
-      Get.to(SignInScreen());
+      await _firestore.collection('users').doc(user.id).set(user.toJson());
+      isLoading = false;
+      Get.snackbar('Success', 'Account created successfully');
     } catch (e) {
-      isSigningUp(false);
-      showToast(message: "Some error occurred: $e");
+      isLoading = false;
+      Get.snackbar('Error', e.toString());
     }
   }
 }

@@ -9,3 +9,32 @@ class AppConstants {
       r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{8,}$'
   );
 }
+String? validatePassword(String? value) {
+  if (value?.trim().isEmpty ?? true) {
+    return 'Enter your password';
+  }
+  if (!AppConstants.passwordRegExp.hasMatch(value!)) {
+    return 'Password must be at least 8 characters, include uppercase, lowercase, number & special character.';
+  }
+  return null;
+}
+
+String? validateEmail(String? value) {
+  if (value?.trim().isEmpty ?? true) {
+    return 'Enter Your Email';
+  }
+  if (!AppConstants.emailRegExp.hasMatch(value!)) {
+    return 'Enter a valid Email';
+  }
+  return null;
+}
+
+String? validatePhone(String? value) {
+  if (value?.trim().isEmpty ?? true) {
+    return 'Enter Phone Number';
+  }
+  if (!AppConstants.phoneRegExp.hasMatch(value!)) {
+    return 'Enter a valid Phone number';
+  }
+  return null;
+}

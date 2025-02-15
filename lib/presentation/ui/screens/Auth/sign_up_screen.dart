@@ -1,213 +1,103 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tik_fest/presentation/ui/screens/Auth/sign_in_screen.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:tik_fest/presentation/ui/screens/Auth/sign_In_screen.dart';
+
 import '../../../state_holder/sign_up_controler.dart';
 import '../../widgets/form_container_widget.dart';
 import '../utility/app_constants.dart';
 
-class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({super.key});
+class SignUpScreen extends StatelessWidget {
+  final SignUpController controller = Get.put(SignUpController());
+  final _formKey = GlobalKey<FormState>();
+  File? _selectedImage;
 
-  @override
-  State<SignUpScreen> createState() => _SignUpScreenState();
-}
 
-class _SignUpScreenState extends State<SignUpScreen> {
+
   @override
   Widget build(BuildContext context) {
-    final SignUpController controller = Get.put(SignUpController());
-
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: Stack(
         children: [
-          // Background Gradient
-          Container(
-            height: double.infinity,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.black,
-                  Colors.grey.shade600,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
+          Positioned.fill(
+            child: Image.asset('assets/images/SignUp.png', fit: BoxFit.cover),
           ),
-
-          // Foreground Content
-          SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 100),
-              child: Container(
-                constraints: BoxConstraints(
-                  minHeight: MediaQuery.of(context).size.height,
+          Positioned(
+            top: 80,
+            left: 30,
+            right: 0,
+            child: SizedBox(height: 320, child: Image.asset('assets/images/humans.png')),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              height: MediaQuery.of(context).size.height * 0.6,
+              padding: const EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.95),
+                borderRadius: const BorderRadius.only(
+                  topRight: Radius.circular(40),
+                  topLeft: Radius.circular(40),
                 ),
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(40),
-                    topRight: Radius.circular(40),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 15,
-                      offset: Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 18, vertical: 30),
+              ),
+              child: SingleChildScrollView(
+                child: Form(
+                  key: _formKey,
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // App Logo
-                      SizedBox(
-                        height: 120,
-                        width: 120,
-                        child: Image.asset('assets/images/applogo.png'),
-                      ),
+                      SizedBox(height: 50, width: 50, child: Image.asset('assets/images/Tikfest.png')),
                       const SizedBox(height: 16),
-                      const Text(
-                        'Create an Account',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                      FormContainerWidget(controller: controller.nameController, hintText: 'Enter Name', keyboardType: TextInputType.text),
+                      FormContainerWidget(controller: controller.emailController, hintText: 'Enter Email', validator: validateEmail, keyboardType: TextInputType.emailAddress),
+                      FormContainerWidget(controller: controller.passwordController, hintText: 'Enter Password', obscureText: true, validator: validatePassword, keyboardType: TextInputType.visiblePassword),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            controller.signUp(_selectedImage);
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.redAccent,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Username Input Field
-                      FormContainerWidget(
-                        controller: controller.usernameController,
-                        hintText: "Username",
-                        isPasswordField: false,
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Email Input Field
-                      FormContainerWidget(
-                        controller: controller.emailController,
-                        hintText: "Email",
-                        isPasswordField: false,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        validator: (String? value) {
-                          if (value?.trim().isEmpty ?? true) {
-                            return 'Enter your email address';
-                          }
-                          if (!AppConstants.emailRegExp.hasMatch(value!)) {
-                            return 'Enter a valid email address';
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      // Phone Input Field
-                      /*FormContainerWidget(
-                        controller: controller.phoneController,
-                        hintText: "Phone Number",
-                        isPasswordField: false,
-                      ),
-
-                      const SizedBox(height: 12),*/
-
-                      // Password Input Field
-                      FormContainerWidget(
-                        controller: controller.passwordController,
-                        hintText: "Password",
-                        isPasswordField: true,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        validator: (String? value) {
-                          if (value?.trim().isEmpty ?? true) {
-                            return 'Enter your password';
-                          }
-                          if (!AppConstants.passwordRegExp.hasMatch(value!)) {
-                            return 'Password must be at least 8 characters, include\nuppercase, lowercase, number & special character.';
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Signup Button
-                      GetX<SignUpController>(
-                        builder: (controller) {
-                          return GestureDetector(
-                            onTap: controller.signUp,
-                            child: Container(
-                              width: double.infinity,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                color: Colors.redAccent,
-                                borderRadius: BorderRadius.circular(15),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
-                                    blurRadius: 15,
-                                    offset: const Offset(0, 5),
-                                  ),
-                                ],
-                              ),
-                              child: Center(
-                                child: controller.isSigningUp.value
-                                    ? const CircularProgressIndicator(
-                                        color: Colors.redAccent)
-                                    : const Text(
-                                        "Sign Up",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 18),
-
-                      // Divider
-                      const Divider(thickness: 1, color: Colors.grey),
-                      const SizedBox(height: 18),
-
-                      // Sign In Navigation
-                      Align(
-                        alignment: Alignment.bottomCenter,
-                        child: Column(
-                          children: [
-                            const Text("Already have an account?"),
-                            GestureDetector(
-                              onTap: () {
-                                Get.to(() => SignInScreen());
-                              },
-                              child: const Text(
-                                "Sign In",
-                                style: TextStyle(
-                                  color: Colors.redAccent,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                              ),
-                            ),
-                          ],
+                        child: const Text(
+                          'Sign Up',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
                         ),
                       ),
                       const SizedBox(height: 20),
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('Already have an account? '),
+                            const SizedBox(width: 5),
+                            GestureDetector(
+                              onTap: (){
+                                Get.to(SignInScreen());
+                              },
+                              child: Text('SignIn',style: TextStyle(
+                                  fontWeight: FontWeight.bold,color: Colors.redAccent),),
+                            ),
+                          ],
+                        ),
+                      )
                     ],
                   ),
                 ),
+                
               ),
+              
             ),
           ),
+
         ],
       ),
     );

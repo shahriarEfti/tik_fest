@@ -5,7 +5,7 @@ import 'package:tik_fest/presentation/ui/screens/Auth/reset_password.dart';
 
 class PinVerificationScreen extends StatefulWidget {
 
-  const PinVerificationScreen({Key? key, }) : super(key: key);
+  const PinVerificationScreen({Key? key, required String verificationId, }) : super(key: key);
 
   @override
   State<PinVerificationScreen> createState() => _PinVerificationScreenState();

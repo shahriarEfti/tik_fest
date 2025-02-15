@@ -147,7 +147,7 @@ Future<void> signOut(FirebaseAuth _auth) async {
   try {
     await _auth.signOut();
     showToast(message: 'Signed out successfully');
-    Get.offAll(() => const SignInScreen());
+    Get.offAll(() =>  SignInScreen());
   } catch (e) {
     showToast(message: 'Error signing out: $e');
   }

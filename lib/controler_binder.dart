@@ -15,5 +15,6 @@ class ControllerBinder extends Bindings {
     Get.put(TicketListControler());
     Get.put(SignInController());
     Get.put(SignUpController());
+
   }
 }

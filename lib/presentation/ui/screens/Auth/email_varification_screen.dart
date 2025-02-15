@@ -12,7 +12,7 @@ class EmailVerificationScreen extends StatefulWidget {
 
 class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
   final TextEditingController _emailController = TextEditingController();
-  final FirebaseAuthService _authService = FirebaseAuthService();
+  final FirebaseAuthServices _authService = FirebaseAuthServices();
 
   @override
   void dispose() {
@@ -67,7 +67,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                     shadowColor: Colors.black26,
                   ),
                   onPressed: () async {
-                    await _sendVerificationEmail();
+
                   },
                   child: const Text(
                     "Send Verification Email",
@@ -86,7 +86,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     );
   }
 
-  Future<void> _sendVerificationEmail() async {
+  /**Future<void> _sendVerificationEmail() async {
     String email = _emailController.text.trim();
     if (email.isEmpty) {
       showToast(message: "Please enter a valid email address.");
@@ -99,5 +99,5 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     } catch (e) {
       showToast(message: "Error: ${e.toString()}");
     }
-  }
+  }*/
 }
