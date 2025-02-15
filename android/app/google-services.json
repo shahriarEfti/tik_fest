@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "873183025832",
+    "project_id": "tikfest-6fdd4",
+    "storage_bucket": "tikfest-6fdd4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:873183025832:android:c3e4924572de965108409d",
+        "android_client_info": {
+          "package_name": "com.bd.tik.fest"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCldmrhED_re0_-sUyMOqQKIft0pt96kVA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
